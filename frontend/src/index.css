@@ -1,0 +1,300 @@
+/* frontend/src/index.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --bg-color: #f8fafc;
+  --card-bg: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* === MINIMALIST CONTAINERS === */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.card {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--border-color);
+}
+
+/* === MODERN TYPOGRAPHY === */
+h1, h2, h3 {
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 1rem;
+}
+
+p {
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+/* === USER-FRIENDLY FORMS & BUTTONS === */
+input, select, textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  margin-bottom: 1rem;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+button {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  width: auto;
+}
+
+button:hover {
+  background-color: var(--primary-hover);
+}
+
+button.danger {
+  background-color: var(--danger);
+}
+
+button.danger:hover {
+  background-color: #dc2626;
+}
+
+/* === CLEAN TABLES (Para sa Admin Dashboard) === */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5rem;
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+th, td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+th {
+  background-color: #f1f5f9;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+}
+
+tr:hover td {
+  background-color: #f8fafc;
+}
+
+/* === STATUS BADGES === */
+.badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.badge.pending { background-color: #fef3c7; color: #b45309; }
+.badge.active { background-color: #d1fae5; color: #047857; }
+.badge.expired { background-color: #fee2e2; color: #b91c1c; }
+
+/* Idagdag ito sa pinakadulo ng index.css mo */
+
+/* === LAYOUT UTILITIES === */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.span-2 {
+  grid-column: span 2;
+}
+
+/* === MOBILE RESPONSIVENESS === */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem; /* Bawasan ang space sa gilid kapag mobile */
+  }
+
+  .card {
+    padding: 1.5rem;
+  }
+
+  .dashboard-header {
+    flex-direction: column; /* Ipatong ang title at button */
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .dashboard-header button {
+    width: 100%; /* Pahabain ang logout button sa phone */
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr; /* Gawing isang linya na lang ang form sa phone */
+  }
+
+  .span-2 {
+    grid-column: span 1;
+  }
+
+  /* Para hindi masira ang table kapag mahaba */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* === PRINT STYLES (Para sa Report Generation) === */
+@media print {
+  body {
+    background-color: white;
+    color: black;
+  }
+  
+  .container {
+    padding: 0;
+    max-width: 100%;
+  }
+
+  .card {
+    box-shadow: none;
+    border: none;
+    padding: 0;
+  }
+
+  /* Itatago natin ang anumang may class na "no-print" kapag nag-print */
+  .no-print {
+    display: none !important;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th, td {
+    border: 1px solid black;
+    padding: 8px;
+    font-size: 12px; /* Papaliitin nang konti para magkasya sa bond paper */
+  }
+
+  .badge {
+    border: 1px solid black;
+    color: black !important;
+    background-color: transparent !important;
+  }
+}
+/* === 60-30-10 ADMIN LAYOUT === */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f1f5f9; /* 60% dominant background */
+}
+
+.sidebar {
+  width: 260px;
+  background-color: #ffffff; /* 30% secondary color (clean white) */
+  color: #334155;
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  border-right: 1px solid #e2e8f0;
+}
+
+.sidebar-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #2563eb; /* 10% accent color */
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.nav-button {
+  background: transparent;
+  color: #64748b;
+  text-align: left;
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-button:hover {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+.nav-button.active {
+  background-color: #2563eb; /* 10% accent */
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+}
+
+.admin-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
