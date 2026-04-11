@@ -25,7 +25,7 @@ export default function AdminDashboard() {
 
     const fetchFranchises = async () => {
         try {
-            const res = await fetch('http://localhost:3000/api/v1/franchises', { headers: { 'Authorization': `Bearer ${token}` } });
+            const res = await fetch('https://g-trams-web2.onrender.com/api/v1/franchises', { headers: { 'Authorization': `Bearer ${token}` } });
             const data = await res.json();
             setFranchises(data);
         } catch (error) {
@@ -36,7 +36,7 @@ export default function AdminDashboard() {
     const fetchUsers = async () => {
         try {
             // inayos na yung route dito papuntang /auth
-            const res = await fetch('http://localhost:3000/api/v1/auth', { headers: { 'Authorization': `Bearer ${token}` } });
+            const res = await fetch('https://g-trams-web2.onrender.com/api/v1/auth', { headers: { 'Authorization': `Bearer ${token}` } });
             if (res.ok) {
                 const data = await res.json();
                 setUsers(data);
@@ -62,7 +62,7 @@ export default function AdminDashboard() {
         }
 
         try {
-            const res = await fetch(`http://localhost:3000/api/v1/franchises/${id}/status`, {
+            const res = await fetch(`https://g-trams-web2.onrender.com/api/v1/franchises/${id}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ status: newStatus, cancelReason: reason }) 

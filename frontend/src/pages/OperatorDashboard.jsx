@@ -25,7 +25,7 @@ export default function OperatorDashboard() {
 
     const fetchMyFranchises = async () => {
         try {
-            const res = await fetch('http://localhost:3000/api/v1/franchises/my-franchises', {
+            const res = await fetch('https://g-trams-web2.onrender.com/api/v1/franchises/my-franchises', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -66,7 +66,7 @@ export default function OperatorDashboard() {
 
             if (orCrFile) submitData.append('orCrDocument', orCrFile);
 
-            const res = await fetch('http://localhost:3000/api/v1/franchises', {
+            const res = await fetch('https://g-trams-web2.onrender.com/api/v1/franchises', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: submitData
@@ -93,7 +93,7 @@ export default function OperatorDashboard() {
                 dateApplied: new Date().toISOString(),
                 taxIdSedula: { serialNo: renewData.serialNo, dateKinuha: renewData.dateKinuha, address: renewData.address }
             };
-            const res = await fetch(`http://localhost:3000/api/v1/franchises/${id}/renew`, {
+            const res = await fetch(`https://g-trams-web2.onrender.com/api/v1/franchises/${id}/renew`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(payload)
@@ -119,7 +119,7 @@ export default function OperatorDashboard() {
         }
 
         try {
-            const res = await fetch(`http://localhost:3000/api/v1/franchises/${id}/cancel`, {
+            const res = await fetch(`https://g-trams-web2.onrender.com/api/v1/franchises/${id}/cancel`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ cancelReason: reason })
@@ -139,7 +139,7 @@ export default function OperatorDashboard() {
             formData.append('address', profileData.address);
             if (profilePic) formData.append('profilePic', profilePic);
 
-            const res = await fetch('http://localhost:3000/api/v1/auth/profile', {
+            const res = await fetch('https://g-trams-web2.onrender.com/api/v1/auth/profile', {
                 method: 'PUT',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData

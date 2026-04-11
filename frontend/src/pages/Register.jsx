@@ -18,7 +18,7 @@ export default function Register() {
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('http://localhost:3000/api/v1/auth/register', {
+            const response = await fetch('https://g-trams-web2.onrender.com/api/v1/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
