@@ -1,19 +1,15 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+// I-import din yung video dito
+import bgVideo from '../assets/gasanview.mp4'; 
 
 export default function Register() {
     const [formData, setFormData] = useState({
-        name: '',
-        address: '',
-        email: '',
-        password: '',
-        role: 'operator' 
+        name: '', address: '', email: '', password: '', role: 'operator'
     });
     const navigate = useNavigate();
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+    const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const handleRegister = async (e) => {
         e.preventDefault();
@@ -29,13 +25,7 @@ export default function Register() {
             if (response.ok) {
                 alert('Registration Successful!');
                 localStorage.setItem('token', data.token);
-                
-                // admin na lang ang chinecheck dito
-                if (data.role === 'admin') {
-                    navigate('/admin-dashboard');
-                } else {
-                    navigate('/operator-dashboard');
-                }
+                navigate('/operator-dashboard');
             } else {
                 alert(data.message || 'Registration failed');
             }
@@ -45,11 +35,26 @@ export default function Register() {
     };
 
     return (
-        <div className="container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div className="card" style={{ width: '100%', maxWidth: '600px' }}>
+        <div style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            
+            {/* BACKGROUND VIDEO */}
+            <video 
+                autoPlay 
+                loop 
+                muted 
+                playsInline 
+                style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', objectFit: 'cover', zIndex: -2 }}
+            >
+                <source src={bgVideo} type="video/mp4" />
+            </video>
+
+            {/* DARK OVERLAY */}
+            <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0, 0, 0, 0.6)', zIndex: -1 }}></div>
+
+            <div className="card" style={{ width: '100%', maxWidth: '600px', zIndex: 1, backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     <h2 style={{ color: '#2563eb', margin: 0 }}>G-TRAMS</h2>
-                    <p style={{ margin: 0 }}>Gumawa ng Bagong Account</p>
+                    <p style={{ margin: 0 }}>Gumawa ng Operator Account</p>
                 </div>
 
                 <form onSubmit={handleRegister}>
@@ -73,20 +78,9 @@ export default function Register() {
                             <label style={{ marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.9rem', display: 'block' }}>Password</label>
                             <input type="password" name="password" placeholder="••••••••" value={formData.password} onChange={handleChange} required minLength="6" />
                         </div>
-                        
-                        <div className="span-2">
-                            <label style={{ marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.9rem', display: 'block' }}>Uri ng Account</label>
-                            <select name="role" value={formData.role} onChange={handleChange}>
-                                <option value="operator">Tricycle Operator</option>
-                                {/* inalis na ang staff option dito */}
-                                <option value="admin">Administrator (Vice Mayor's Office)</option>
-                            </select>
-                        </div>
                     </div>
 
-                    <button type="submit" style={{ marginTop: '1.5rem', width: '100%' }}>
-                        I-submit at Mag-register
-                    </button>
+                    <button type="submit" style={{ marginTop: '1.5rem', width: '100%' }}>I-submit at Mag-register</button>
                 </form>
 
                 <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem' }}>
