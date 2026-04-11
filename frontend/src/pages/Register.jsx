@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-// I-import din yung video dito
 import bgVideo from '../assets/gasanview.mp4'; 
+// I-import din ang logo dito
+import logoImg from '../assets/gasan-logo.png'; 
 
 export default function Register() {
     const [formData, setFormData] = useState({
@@ -52,7 +53,14 @@ export default function Register() {
             <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0, 0, 0, 0.6)', zIndex: -1 }}></div>
 
             <div className="card" style={{ width: '100%', maxWidth: '600px', zIndex: 1, backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
+                
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    {/* LOGO NG MUNISIPYO */}
+                    <img 
+                        src={logoImg} 
+                        alt="Municipal Logo" 
+                        style={{ width: '80px', height: 'auto', marginBottom: '10px' }} 
+                    />
                     <h2 style={{ color: '#2563eb', margin: 0 }}>G-TRAMS</h2>
                     <p style={{ margin: 0 }}>Gumawa ng Operator Account</p>
                 </div>

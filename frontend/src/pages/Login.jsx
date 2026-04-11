@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-// I-import natin yung video galing sa assets folder
 import bgVideo from '../assets/gasanview.mp4'; 
+// I-import ang logo dito
+import logoImg from '../assets/gasan-logo.png'; 
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -38,7 +39,6 @@ export default function Login() {
     return (
         <div style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
             
-            {/* BACKGROUND VIDEO */}
             <video 
                 autoPlay 
                 loop 
@@ -49,12 +49,17 @@ export default function Login() {
                 <source src={bgVideo} type="video/mp4" />
             </video>
 
-            {/* DARK OVERLAY PARA BUMAKAT YUNG FORM */}
             <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0, 0, 0, 0.6)', zIndex: -1 }}></div>
 
             <div className="card" style={{ width: '100%', maxWidth: '400px', zIndex: 1, backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
                 
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    {/* DITO ILALAGAY YUNG LOGO */}
+                    <img 
+                        src={logoImg} 
+                        alt="Municipal Logo" 
+                        style={{ width: '80px', height: 'auto', marginBottom: '10px' }} 
+                    />
                     <h2 style={{ color: '#2563eb', margin: 0 }}>G-TRAMS</h2>
                     <p style={{ margin: 0, color: '#64748b' }}>Tricycle Franchise Management System</p>
                 </div>
