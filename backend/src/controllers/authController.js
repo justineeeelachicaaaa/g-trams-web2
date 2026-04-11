@@ -1,99 +1,160 @@
 const User = require('../models/userModel');
+const bcrypt = require('bcryptjs'); // o 'bcrypt', depende sa gamit mo
 const jwt = require('jsonwebtoken');
+const sendEmail = require('../utils/sendEmail'); // I-import ang mailer
 
-// Helper function para gumawa ng Token
-const generateToken = (id, role) => {
-    return jwt.sign({ id, role }, process.env.JWT_SECRET, {
-        expiresIn: '30d' // Ma-eexpire ang token in 30 days
-    });
-};
-
-// @desc    Register a new user (Operator, Admin, o Staff)
-// @route   POST /api/v1/auth/register
-const registerUser = async (req, res) => {
+// REGISTER
+exports.register = async (req, res) => {
     try {
-        // Kinuha natin ang name at address base sa bagong User model natin
         const { name, address, email, password, role } = req.body;
 
-        // I-check kung may gumagamit na ng email na ito
-        const userExists = await User.findOne({ email });
-        if (userExists) return res.status(400).json({ message: 'User already exists' });
+        // Check kung may user na
+        let user = await User.findOne({ email });
+        if (user) {
+            return res.status(400).json({ message: 'Email is already registered' });
+        }
 
-        // I-save ang bagong user
-        const user = await User.create({ name, address, email, password, role });
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
-        res.status(201).json({
-            _id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            token: generateToken(user._id, user.role)
+        // Generate 6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otpExpire = new Date(Date.now() + 10 * 60 * 1000); // Valid for 10 minutes
+
+        // Create user (pero isVerified: false pa)
+        user = new User({
+            name, address, email, role,
+            password: hashedPassword,
+            otp, otpExpire
         });
+
+        await user.save();
+
+        // Send OTP via Email
+        const message = `Hello ${name},\n\nWelcome to G-TRAMS!\n\nYour verification code is: ${otp}\n\nThis code is valid for 10 minutes.\n\nThank you!`;
+        
+        await sendEmail({
+            email: user.email,
+            subject: 'G-TRAMS - Email Verification Code',
+            message: message
+        });
+
+        res.status(200).json({ message: 'OTP sent to your email. Please verify.' });
+
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error(error);
+        res.status(500).json({ message: 'Server error during registration' });
     }
 };
 
-// @desc    Authenticate/Login user
-// @route   POST /api/v1/auth/login
-const loginUser = async (req, res) => {
+// VERIFY EMAIL (Bagong Function)
+exports.verifyEmail = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+
+        const user = await User.findOne({ email });
+        if (!user) return res.status(400).json({ message: 'User not found' });
+
+        if (user.isVerified) return res.status(400).json({ message: 'User already verified' });
+
+        if (user.otp !== otp || user.otpExpire < Date.now()) {
+            return res.status(400).json({ message: 'Invalid or expired OTP' });
+        }
+
+        // Kung tama ang OTP
+        user.isVerified = true;
+        user.otp = undefined;
+        user.otpExpire = undefined;
+        await user.save();
+
+        // Bigyan na ng token para makapasok
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+        res.status(200).json({ message: 'Email verified successfully', token, role: user.role });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error during verification' });
+    }
+};
+
+// LOGIN (Update: Dapat bawal pumasok pag hindi pa verified)
+exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
         const user = await User.findOne({ email });
+        if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
-        if (user && (await user.matchPassword(password))) {
-            res.json({
-                _id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                token: generateToken(user._id, user.role)
-            });
-        } else {
-            res.status(401).json({ message: 'Invalid email or password' });
+        // I-check kung verified na
+        if (!user.isVerified) {
+            return res.status(401).json({ message: 'Please verify your email first', notVerified: true });
         }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+        res.status(200).json({ token, role: user.role });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
     }
 };
 
-const getAllUsers = async (req, res) => {
+// FORGOT PASSWORD (Bagong Function)
+exports.forgotPassword = async (req, res) => {
     try {
-        // ginamit natin yung .select('-password') para di isama yung password sa ibabato sa frontend for security
-        const users = await User.find({}).select('-password');
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        user.otp = otp;
+        user.otpExpire = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+        await user.save();
+
+        const message = `You requested a password reset.\n\nYour reset code is: ${otp}\n\nIf you did not request this, please ignore this email.`;
+        await sendEmail({ email: user.email, subject: 'G-TRAMS - Password Reset Code', message });
+
+        res.status(200).json({ message: 'Reset code sent to email' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// RESET PASSWORD (Bagong Function)
+exports.resetPassword = async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user || user.otp !== otp || user.otpExpire < Date.now()) {
+            return res.status(400).json({ message: 'Invalid or expired code' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
+        user.otp = undefined;
+        user.otpExpire = undefined;
+        await user.save();
+
+        res.status(200).json({ message: 'Password reset successful. You can now login.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// GET ALL USERS (Kunin mo kung anong existing code mo para sa pagkuha ng users, halimbawa:)
+exports.getUsers = async (req, res) => {
+    try {
+        const users = await User.find().select('-password');
         res.status(200).json(users);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ message: 'Server error' });
     }
 };
-const updateUserProfile = async (req, res) => {
-    try {
-        const user = await User.findById(req.user._id);
-        if (user) {
-            user.name = req.body.name || user.name;
-            user.address = req.body.address || user.address;
-            
-            // pag may in-upload na picture galing cloudinary
-            if (req.file) {
-                user.profilePicUrl = req.file.path;
-            }
-            
-            const updatedUser = await user.save();
-            res.json({
-                _id: updatedUser._id,
-                name: updatedUser.name,
-                email: updatedUser.email,
-                address: updatedUser.address,
-                profilePicUrl: updatedUser.profilePicUrl
-            });
-        } else {
-            res.status(404).json({ message: 'user not found' });
-        }
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-
-module.exports = { registerUser, loginUser, getAllUsers, updateUserProfile };

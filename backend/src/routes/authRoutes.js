@@ -1,15 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const upload = require('../config/cloudinary'); 
+// I-import lahat ng functions galing sa controller
+const { register, login, verifyEmail, forgotPassword, resetPassword, getUsers } = require('../controllers/authController');
 
-const { registerUser, loginUser, getAllUsers, updateUserProfile } = require('../controllers/authController'); 
-const { protect } = require('../middleware/authMiddleware'); 
+router.post('/register', register);
+router.post('/login', login);
+router.post('/verify-email', verifyEmail); // Bagong route
+router.post('/forgot-password', forgotPassword); // Bagong route
+router.post('/reset-password', resetPassword); // Bagong route
 
-router.post('/register', registerUser);
-router.post('/login', loginUser);
-router.get('/', protect, getAllUsers); 
-
-// bagong route para sa profile edit (may picture upload)
-router.put('/profile', protect, upload.single('profilePic'), updateUserProfile);
+// Example route para sa getUsers (kung may auth middleware ka, i-add mo na lang)
+router.get('/', getUsers); 
 
 module.exports = router;

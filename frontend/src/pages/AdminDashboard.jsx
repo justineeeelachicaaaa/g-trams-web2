@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
+import dashboardIcon from '../assets/dashboard-icon.png';
+import analyticsIcon from '../assets/analytics-icon.png';
+import usersIcon from '../assets/users-icon.png';
+import searchIcon from '../assets/search-icon.png';
+
 export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState('admin'); 
     
@@ -35,7 +40,6 @@ export default function AdminDashboard() {
 
     const fetchUsers = async () => {
         try {
-            // inayos na yung route dito papuntang /auth
             const res = await fetch('https://g-trams-web2.onrender.com/api/v1/auth', { headers: { 'Authorization': `Bearer ${token}` } });
             if (res.ok) {
                 const data = await res.json();
@@ -116,14 +120,15 @@ export default function AdminDashboard() {
         <div className="admin-layout">
             <div className="sidebar no-print">
                 <div className="sidebar-title">G-TRAMS</div>
-                <button className={`nav-button ${activeTab === 'admin' ? 'active' : ''}`} onClick={() => setActiveTab('admin')}>
-                    📋 Admin Dashboard
+                
+                <button className={`nav-button ${activeTab === 'admin' ? 'active' : ''}`} onClick={() => setActiveTab('admin')} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <img src={dashboardIcon} alt="Dashboard" style={{ width: '22px', height: '22px' }} /> Admin Dashboard
                 </button>
-                <button className={`nav-button ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => setActiveTab('analytics')}>
-                    📊 Analytics
+                <button className={`nav-button ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => setActiveTab('analytics')} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <img src={analyticsIcon} alt="Analytics" style={{ width: '22px', height: '22px' }} /> Analytics
                 </button>
-                <button className={`nav-button ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>
-                    👥 User Management
+                <button className={`nav-button ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <img src={usersIcon} alt="Users" style={{ width: '22px', height: '22px' }} /> User Management
                 </button>
                 
                 <div style={{ flex: 1 }}></div>
@@ -168,7 +173,17 @@ export default function AdminDashboard() {
                                     <select value={filterToda} onChange={(e) => setFilterToda(e.target.value)} style={{ padding: '0.5rem', borderRadius: '6px' }}>
                                         {uniqueTodas.map(toda => <option key={toda} value={toda}>{toda === 'All' ? 'Lahat ng TODA' : toda}</option>)}
                                     </select>
-                                    <input type="text" placeholder="🔍 Hanapin..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ margin: 0 }}/>
+                                    
+                                    <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#fff', border: '1px solid #cbd5e1', padding: '0 10px', borderRadius: '6px' }}>
+                                        <img src={searchIcon} alt="Search" style={{ width: '18px', height: '18px', opacity: 0.5 }} />
+                                        <input 
+                                            type="text" 
+                                            placeholder="Hanapin..." 
+                                            value={searchTerm} 
+                                            onChange={(e) => setSearchTerm(e.target.value)} 
+                                            style={{ border: 'none', outline: 'none', margin: 0, padding: '0.5rem', backgroundColor: 'transparent' }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
 

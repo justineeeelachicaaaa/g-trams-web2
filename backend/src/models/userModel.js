@@ -29,6 +29,17 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['operator', 'admin'], // inalis na ang staff dito
         default: 'operator'
+    },
+    // Idagdag mo 'to sa ilalim ng existing fields mo (tulad ng email, password, role)
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    otp: {
+        type: String
+    },
+    otpExpire: {
+        type: Date
     }
 }, { timestamps: true });
 
