@@ -298,3 +298,15 @@ tr:hover td {
   padding: 2rem;
   overflow-y: auto;
 }
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    .print-header {
+        display: block !important;
+    }
+    body {
+        background-color: white;
+    }
+}

@@ -14,7 +14,8 @@ export default function Login() {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('https://g-trams-web2.onrender.com/api/v1/auth/login', {
+            // NAKA-LOCALHOST NA ITO
+            const response = await fetch('http://localhost:3000/api/v1/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -52,19 +53,19 @@ export default function Login() {
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     <img src={logoImg} alt="Municipal Logo" style={{ width: '80px', height: 'auto', marginBottom: '10px' }} />
                     <h2 style={{ color: '#2563eb', margin: 0 }}>G-TRAMS</h2>
-                    <p style={{ margin: 0, color: '#64748b' }}>Tricycle Franchise Management System</p>
+                    <p style={{ margin: 0, color: '#64748b' }}>Gasan Tricycle Franchise Management System</p>
                 </div>
 
                 <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column' }}>
                     
                     <label style={{ marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.9rem' }}>Email Address</label>
-                    <input type="email" placeholder="admin@gasan.gov.ph" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                    <input type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} required />
 
                     <label style={{ marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.9rem', marginTop: '10px' }}>Password</label>
                     <div style={{ position: 'relative', width: '100%', display: 'flex', alignItems: 'center' }}>
                         <input 
                             type={showPassword ? "text" : "password"} 
-                            placeholder="Enter password" 
+                            placeholder="Enter your password" 
                             value={password} 
                             onChange={(e) => setPassword(e.target.value)} 
                             required 
@@ -79,8 +80,11 @@ export default function Login() {
                         </button>
                     </div>
 
+                    {/* DITO YUNG NA-UPDATE NA FORGOT PASSWORD LINK */}
                     <div style={{ textAlign: 'right', marginTop: '5px' }}>
-                        <span style={{ fontSize: '0.8rem', color: '#64748b', cursor: 'pointer' }}>Forgot Password?</span>
+                        <Link to="/forgot-password" style={{ fontSize: '0.8rem', color: '#64748b', textDecoration: 'none', fontWeight: 'bold' }}>
+                            Forgot Password?
+                        </Link>
                     </div>
 
                     <button type="submit" style={{ marginTop: '1rem', width: '100%' }}>Log In</button>

@@ -15,23 +15,14 @@ const franchiseSchema = new mongoose.Schema({
     todaName: { type: String, required: true },
     orCrUrl: { type: String }, 
    
-    dateApplied: { 
-        type: Date, 
-        default: Date.now 
-    },
-    taxIdSedula: {
-        dateKinuha: { type: Date, required: true },
-        address: { type: String, required: true }, 
-        serialNo: { type: String, required: true }
-    },
-
-    status: {
-        type: String,
-        enum: ['Pending', 'Active', 'Expired', 'Cancelled'],
-        default: 'Pending'
-    },
+    dateApplied: { type: Date, default: Date.now },
     
-    // nilabas ko dito para di mag-error ang database
+    // BINAGO: Pinalitan ang taxIdSedula para tumugma sa controller
+    cedulaDate: { type: Date, required: true },
+    cedulaAddress: { type: String, required: true },
+    cedulaSerialNo: { type: String, required: true },
+
+    status: { type: String, enum: ['Pending', 'Active', 'Expired', 'Cancelled'], default: 'Pending' },
     applicationType: { type: String, default: 'New' },
     cancelReason: { type: String, default: '' },       
             

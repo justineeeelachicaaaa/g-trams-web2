@@ -7,16 +7,20 @@ export default function OperatorDashboard() {
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
 
+    // TAMA NA ANG MGA FIELDS (Tugma sa backend)
     const [formData, setFormData] = useState({
         zone: '', made: '', make: '', motorNo: '', chassisNo: '', plateNo: '',
-        todaName: '', dateKinuha: '', address: '', serialNo: ''
+        todaName: '', cedulaDate: '', cedulaAddress: '', cedulaSerialNo: ''
     });
     const [orCrFile, setOrCrFile] = useState(null); 
     const [renewingId, setRenewingId] = useState(null);
-    const [renewData, setRenewData] = useState({ serialNo: '', dateKinuha: '', address: '' });
+    const [renewData, setRenewData] = useState({ cedulaSerialNo: '', cedulaDate: '', cedulaAddress: '' });
 
     const [profileData, setProfileData] = useState({ name: '', address: '' });
     const [profilePic, setProfilePic] = useState(null);
+
+    // CHANGE PASSWORD STATE
+    const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
 
     useEffect(() => {
         if (!token) navigate('/login');
@@ -25,7 +29,7 @@ export default function OperatorDashboard() {
 
     const fetchMyFranchises = async () => {
         try {
-            const res = await fetch('https://g-trams-web2.onrender.com/api/v1/franchises/my-franchises', {
+            const res = await fetch('http://localhost:3000/api/v1/franchises/my-franchises', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -48,7 +52,7 @@ export default function OperatorDashboard() {
 
     const handleApply = async (e) => {
         e.preventDefault();
-        if (!canApply) return alert("hanggang dalawang (2) prangkisa lang ang pwede per operator.");
+        if (!canApply) return alert("Hanggang dalawang (2) prangkisa lang ang pwede per operator.");
 
         try {
             const submitData = new FormData();
@@ -60,26 +64,26 @@ export default function OperatorDashboard() {
             submitData.append('motorNo', formData.motorNo);
             submitData.append('chassisNo', formData.chassisNo);
             
-            submitData.append('taxIdSedula', JSON.stringify({ 
-                dateKinuha: formData.dateKinuha, address: formData.address, serialNo: formData.serialNo 
-            }));
+            submitData.append('cedulaDate', formData.cedulaDate);
+            submitData.append('cedulaAddress', formData.cedulaAddress);
+            submitData.append('cedulaSerialNo', formData.cedulaSerialNo);
 
             if (orCrFile) submitData.append('orCrDocument', orCrFile);
 
-            const res = await fetch('https://g-trams-web2.onrender.com/api/v1/franchises', {
+            const res = await fetch('http://localhost:3000/api/v1/franchises', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: submitData
             });
 
             if (res.ok) {
-                alert('Application Submitted!');
+                alert('Application Submitted Successfully!');
                 fetchMyFranchises(); 
-                setFormData({ zone: '', made: '', make: '', motorNo: '', chassisNo: '', plateNo: '', todaName: '', dateKinuha: '', address: '', serialNo: '' });
+                setFormData({ zone: '', made: '', make: '', motorNo: '', chassisNo: '', plateNo: '', todaName: '', cedulaDate: '', cedulaAddress: '', cedulaSerialNo: '' });
                 setOrCrFile(null); 
             } else {
                 const data = await res.json();
-                alert(data.message || 'error sa pag-submit.');
+                alert(data.message || 'Error sa pag-submit. Siguraduhing unique ang plate, motor, at chassis no.');
             }
         } catch (error) {
             console.error('error applying:', error);
@@ -90,21 +94,23 @@ export default function OperatorDashboard() {
         e.preventDefault();
         try {
             const payload = {
-                dateApplied: new Date().toISOString(),
-                taxIdSedula: { serialNo: renewData.serialNo, dateKinuha: renewData.dateKinuha, address: renewData.address }
+                dateApplied: new Date().toISOString().split('T')[0],
+                cedulaSerialNo: renewData.cedulaSerialNo,
+                cedulaDate: renewData.cedulaDate,
+                cedulaAddress: renewData.cedulaAddress
             };
-            const res = await fetch(`https://g-trams-web2.onrender.com/api/v1/franchises/${id}/renew`, {
+            const res = await fetch(`http://localhost:3000/api/v1/franchises/${id}/renew`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(payload)
             });
             if (res.ok) {
-                alert('Renewal request submitted!');
+                alert('Renewal request submitted! Antayin ang approval ng Admin.');
                 setRenewingId(null);
-                setRenewData({ serialNo: '', dateKinuha: '', address: '' });
+                setRenewData({ cedulaSerialNo: '', cedulaDate: '', cedulaAddress: '' });
                 fetchMyFranchises();
             } else {
-                alert('error submitting renewal.');
+                alert('Error submitting renewal.');
             }
         } catch (error) {
             console.error('error renewing:', error);
@@ -112,14 +118,14 @@ export default function OperatorDashboard() {
     };
 
     const handleCancelFranchise = async (id) => {
-        const reason = window.prompt("bakit mo ika-cancel ang prangkisang ito?");
+        const reason = window.prompt("Bakit mo ika-cancel ang prangkisang ito?");
         if (reason === null || reason.trim() === '') {
-            alert("kailangan mong maglagay ng rason para makapag-cancel.");
+            alert("Kailangan mong maglagay ng rason para makapag-cancel.");
             return;
         }
 
         try {
-            const res = await fetch(`https://g-trams-web2.onrender.com/api/v1/franchises/${id}/cancel`, {
+            const res = await fetch(`http://localhost:3000/api/v1/franchises/${id}/cancel`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ cancelReason: reason })
@@ -134,27 +140,58 @@ export default function OperatorDashboard() {
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
         try {
-            const formData = new FormData();
-            formData.append('name', profileData.name);
-            formData.append('address', profileData.address);
-            if (profilePic) formData.append('profilePic', profilePic);
+            const formDataProfile = new FormData();
+            formDataProfile.append('name', profileData.name);
+            formDataProfile.append('address', profileData.address);
+            if (profilePic) formDataProfile.append('profilePic', profilePic);
 
-            const res = await fetch('https://g-trams-web2.onrender.com/api/v1/auth/profile', {
+            const res = await fetch('http://localhost:3000/api/v1/auth/profile', {
                 method: 'PUT',
                 headers: { 'Authorization': `Bearer ${token}` },
-                body: formData
+                body: formDataProfile
             });
 
             if (res.ok) {
-                alert("profile updated!");
+                alert("Profile updated!");
                 setProfileData({ name: '', address: '' });
                 setProfilePic(null);
             } else {
-                alert("error updating profile.");
+                alert("Error updating profile.");
             }
         } catch (error) {
             console.error("error:", error);
         }
+    };
+
+    // CHANGE PASSWORD HANDLER
+    const handleChangePassword = async (e) => {
+        e.preventDefault();
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            return alert("Hindi magkapareho ang New Password at Confirm Password.");
+        }
+        try {
+            const res = await fetch('http://localhost:3000/api/v1/auth/change-password', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ oldPassword: passwordData.oldPassword, newPassword: passwordData.newPassword })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert('Password changed successfully!');
+                setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+            } else {
+                alert(data.message || 'Error changing password.');
+            }
+        } catch (err) {
+            alert('Cannot connect to server.');
+        }
+    };
+
+    const getExpiryDate = (dateApplied) => {
+        if (!dateApplied) return 'N/A';
+        const applied = new Date(dateApplied);
+        const expiry = new Date(applied.setFullYear(applied.getFullYear() + 1));
+        return expiry.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     };
 
     return (
@@ -166,6 +203,11 @@ export default function OperatorDashboard() {
                 </button>
                 <button className={`nav-button ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
                     👤 My Profile
+                </button>
+                
+                {/* SETTINGS BUTTON DAGDAG DITO */}
+                <button className={`nav-button ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
+                    ⚙️ Settings
                 </button>
                 
                 <div style={{ flex: 1 }}></div>
@@ -201,9 +243,9 @@ export default function OperatorDashboard() {
                                         <hr style={{ margin: '1.5rem 0', borderColor: '#e2e8f0', borderStyle: 'solid' }} />
                                         <h4 style={{ marginBottom: '1rem', color: '#64748b' }}>Detalye ng Sedula</h4>
                                         <div className="form-grid">
-                                            <div><label style={{color: '#334155'}}>Serial No.</label><input type="text" name="serialNo" value={formData.serialNo} onChange={handleChange} required /></div>
-                                            <div><label style={{color: '#334155'}}>Date Kinuha</label><input type="date" name="dateKinuha" value={formData.dateKinuha} onChange={handleChange} required /></div>
-                                            <div className="span-2"><label style={{color: '#334155'}}>Address</label><input type="text" name="address" value={formData.address} onChange={handleChange} required /></div>
+                                            <div><label style={{color: '#334155'}}>Serial No.</label><input type="text" name="cedulaSerialNo" value={formData.cedulaSerialNo} onChange={handleChange} required /></div>
+                                            <div><label style={{color: '#334155'}}>Date Kinuha</label><input type="date" name="cedulaDate" value={formData.cedulaDate} onChange={handleChange} required /></div>
+                                            <div className="span-2"><label style={{color: '#334155'}}>Address</label><input type="text" name="cedulaAddress" value={formData.cedulaAddress} onChange={handleChange} required /></div>
                                         </div>
                                         
                                         <hr style={{ margin: '1.5rem 0', borderColor: '#e2e8f0', borderStyle: 'solid' }} />
@@ -238,10 +280,10 @@ export default function OperatorDashboard() {
                                                         <span className={`badge ${franchise.status.toLowerCase()}`}>{franchise.status}</span>
                                                     </div>
                                                     <p style={{ margin: '0 0 5px 0', fontSize: '0.85rem', color: '#475569' }}><strong>Unit:</strong> {franchise.make} {franchise.made}</p>
-                                                    <p style={{ margin: '0', fontSize: '0.85rem', color: '#475569' }}><strong>Zone:</strong> {franchise.zone} | <strong>TODA:</strong> {franchise.todaName}</p>
+                                                    <p style={{ margin: '0 0 5px 0', fontSize: '0.85rem', color: '#475569' }}><strong>Zone:</strong> {franchise.zone} | <strong>TODA:</strong> {franchise.todaName}</p>
+                                                    <p style={{ margin: '0', fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>Valid Until: {getExpiryDate(franchise.dateApplied)}</p>
                                                 </div>
 
-                                                {/* KUNG CANCELLED, IPAPAKITA YUNG RASON KUNG BAKIT */}
                                                 {franchise.status === 'Cancelled' && franchise.cancelReason && (
                                                     <div style={{ backgroundColor: '#fee2e2', padding: '10px', borderRadius: '6px', border: '1px solid #fca5a5', marginTop: '10px', marginBottom: '10px' }}>
                                                         <p style={{ margin: 0, color: '#991b1b', fontSize: '0.85rem' }}><strong>Rason ng Pag-cancel:</strong> {franchise.cancelReason}</p>
@@ -249,21 +291,21 @@ export default function OperatorDashboard() {
                                                 )}
                                                 
                                                 {franchise.status !== 'Cancelled' && (
-                                                    <button onClick={() => handleCancelFranchise(franchise._id)} style={{ width: '100%', backgroundColor: '#ef4444', fontSize: '0.85rem', padding: '6px', marginTop: '5px' }}>
+                                                    <button onClick={() => handleCancelFranchise(franchise._id)} style={{ width: '100%', backgroundColor: '#ef4444', fontSize: '0.85rem', padding: '6px', marginTop: '5px', color: 'white', border: 'none', borderRadius: '5px' }}>
                                                         I-Cancel ang Prangkisa
                                                     </button>
                                                 )}
 
                                                 {franchise.status === 'Expired' && renewingId !== franchise._id && (
-                                                    <button onClick={() => setRenewingId(franchise._id)} style={{ width: '100%', backgroundColor: '#f59e0b', fontSize: '0.9rem', padding: '8px', marginTop: '10px' }}>Mag-Renew</button>
+                                                    <button onClick={() => setRenewingId(franchise._id)} style={{ width: '100%', backgroundColor: '#f59e0b', fontSize: '0.9rem', padding: '8px', marginTop: '10px', color: 'white', border: 'none', borderRadius: '5px' }}>Mag-Renew</button>
                                                 )}
 
                                                 {renewingId === franchise._id && (
                                                     <form onSubmit={(e) => submitRenewal(e, franchise._id)} style={{ marginTop: '10px', padding: '10px', backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '5px' }}>
-                                                        <input type="text" name="serialNo" placeholder="Bagong Sedula Serial" value={renewData.serialNo} onChange={handleRenewChange} required style={{ padding: '6px', marginBottom: '8px' }}/>
-                                                        <input type="date" name="dateKinuha" value={renewData.dateKinuha} onChange={handleRenewChange} required style={{ padding: '6px', marginBottom: '8px' }}/>
-                                                        <input type="text" name="address" placeholder="Saan Kinuha?" value={renewData.address} onChange={handleRenewChange} required style={{ padding: '6px', marginBottom: '10px' }}/>
-                                                        <div style={{ display: 'flex', gap: '5px' }}><button type="submit" style={{ flex: 1, padding: '6px', backgroundColor: '#10b981' }}>I-submit</button><button type="button" onClick={() => setRenewingId(null)} className="danger" style={{ flex: 1, padding: '6px' }}>Back</button></div>
+                                                        <input type="text" name="cedulaSerialNo" placeholder="Bagong Sedula Serial" value={renewData.cedulaSerialNo} onChange={handleRenewChange} required style={{ padding: '6px', marginBottom: '8px', width: '100%', border: '1px solid #ccc', borderRadius: '5px' }}/>
+                                                        <input type="date" name="cedulaDate" value={renewData.cedulaDate} onChange={handleRenewChange} required style={{ padding: '6px', marginBottom: '8px', width: '100%', border: '1px solid #ccc', borderRadius: '5px' }}/>
+                                                        <input type="text" name="cedulaAddress" placeholder="Saan Kinuha?" value={renewData.cedulaAddress} onChange={handleRenewChange} required style={{ padding: '6px', marginBottom: '10px', width: '100%', border: '1px solid #ccc', borderRadius: '5px' }}/>
+                                                        <div style={{ display: 'flex', gap: '5px' }}><button type="submit" style={{ flex: 1, padding: '6px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '5px' }}>I-submit</button><button type="button" onClick={() => setRenewingId(null)} className="danger" style={{ flex: 1, padding: '6px', color: 'white', border: 'none', borderRadius: '5px' }}>Back</button></div>
                                                     </form>
                                                 )}
                                             </div>
@@ -293,15 +335,39 @@ export default function OperatorDashboard() {
                                 <input type="file" accept="image/*" onChange={(e) => setProfilePic(e.target.files[0])} style={{ width: '200px', padding: '5px', fontSize: '0.8rem' }} />
                             </div>
 
-                            <label style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#334155' }}>Buong Pangalan</label>
-                            <input type="text" name="name" value={profileData.name} onChange={handleProfileChange} placeholder="Ilagay ang bagong pangalan..." />
+                            <label style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#334155', display: 'block', marginBottom: '5px' }}>Buong Pangalan</label>
+                            <input type="text" name="name" value={profileData.name} onChange={handleProfileChange} placeholder="Ilagay ang bagong pangalan..." style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px', marginBottom: '10px' }} />
 
-                            <label style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#334155', marginTop: '10px' }}>Home Address</label>
-                            <input type="text" name="address" value={profileData.address} onChange={handleProfileChange} placeholder="Ilagay ang bagong address..." />
+                            <label style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#334155', display: 'block', marginBottom: '5px', marginTop: '10px' }}>Home Address</label>
+                            <input type="text" name="address" value={profileData.address} onChange={handleProfileChange} placeholder="Ilagay ang bagong address..." style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px', marginBottom: '10px' }} />
 
-                            <button type="submit" style={{ width: '100%', marginTop: '1rem', backgroundColor: '#2563eb' }}>
+                            <button type="submit" style={{ width: '100%', marginTop: '1rem', backgroundColor: '#2563eb', color: 'white', border: 'none', padding: '12px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
                                 Save Profile Changes
                             </button>
+                        </form>
+                    </div>
+                )}
+
+                {/* SETTINGS TAB PARA SA CHANGE PASSWORD */}
+                {activeTab === 'settings' && (
+                    <div className="card" style={{ maxWidth: '500px', margin: '0 auto' }}>
+                        <h2 style={{ color: '#0f172a', marginTop: 0 }}>Account Settings</h2>
+                        <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>I-update ang iyong password dito.</p>
+                        
+                        <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            <div>
+                                <label style={{ fontWeight: 'bold', fontSize: '0.9rem', display: 'block', marginBottom: '5px' }}>Old Password</label>
+                                <input type="password" value={passwordData.oldPassword} onChange={(e) => setPasswordData({...passwordData, oldPassword: e.target.value})} required style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }} />
+                            </div>
+                            <div>
+                                <label style={{ fontWeight: 'bold', fontSize: '0.9rem', display: 'block', marginBottom: '5px' }}>New Password</label>
+                                <input type="password" value={passwordData.newPassword} onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})} required style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }} />
+                            </div>
+                            <div>
+                                <label style={{ fontWeight: 'bold', fontSize: '0.9rem', display: 'block', marginBottom: '5px' }}>Confirm New Password</label>
+                                <input type="password" value={passwordData.confirmPassword} onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})} required style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }} />
+                            </div>
+                            <button type="submit" style={{ width: '100%', backgroundColor: '#2563eb', color: 'white', padding: '12px', marginTop: '10px', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>Update Password</button>
                         </form>
                     </div>
                 )}

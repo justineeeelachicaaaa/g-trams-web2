@@ -1,15 +1,24 @@
 const express = require('express');
 const router = express.Router();
+const { protect } = require('../middleware/authMiddleware');
 
-// Siguraduhin na ang mga ito lang ang naka-import
 const { 
     register, 
     login, 
-    getUsers 
+    getUsers,
+    forgotPassword,
+    resetPassword,
+    changePassword
 } = require('../controllers/authController');
 
+// MGA EXISTING ROUTES
 router.post('/register', register);
 router.post('/login', login);
-router.get('/', getUsers);
+router.get('/', protect, getUsers);
+
+// MGA BAGONG ROUTES PARA SA PASSWORD
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password', resetPassword);
+router.put('/change-password', protect, changePassword);
 
 module.exports = router;
