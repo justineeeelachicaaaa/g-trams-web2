@@ -1,7 +1,7 @@
 {
   "short_name": "G-TRAMS",
   "name": "Gasan Tricycle Franchise Management System",
-  "description": "LGU Gasan Tricycle Management and Application System",
+  "description": "Gasan Tricycle Management and Application System",
   "icons": [
     {
       "src": "/vite.svg",

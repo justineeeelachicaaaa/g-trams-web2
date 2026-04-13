@@ -127,3 +127,70 @@ exports.changePassword = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+// 1. VERIFY ADMIN PASSWORD (Para sa Security Prompt)
+exports.verifyAdminPassword = async (req, res) => {
+    try {
+        const { password } = req.body;
+        const user = await User.findById(req.user._id); // Kunin ang admin na naka-login
+        
+        const isMatch = await user.matchPassword(password);
+        if (!isMatch) return res.status(401).json({ message: 'Incorrect Admin Password' });
+        
+        res.status(200).json({ message: 'Password Verified' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// 2. UPDATE USER DETAILS (Admin Action)
+exports.updateUser = async (req, res) => {
+    try {
+        const updatedUser = await User.findByIdAndUpdate(
+            req.params.id, 
+            req.body, 
+            { new: true }
+        ).select('-password');
+        
+        if (!updatedUser) return res.status(404).json({ message: 'User not found' });
+        res.status(200).json(updatedUser);
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating user' });
+    }
+};
+
+// 3. DELETE USER (Admin Action)
+exports.deleteUser = async (req, res) => {
+    try {
+        const user = await User.findByIdAndDelete(req.params.id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        res.status(200).json({ message: 'User successfully deleted' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting user' });
+    }
+};
+
+exports.updateProfile = async (req, res) => {
+    try {
+        const userId = req.user.id; 
+        const { name, address } = req.body;
+        
+        let updateData = { name, address };
+
+        // KUNG MAY SINALO SI MULTER, KUNIN ANG CLOUDINARY LINK!
+        if (req.file) {
+            updateData.profilePic = req.file.path; // Automatic Cloudinary URL na ito!
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
+
+        res.status(200).json({
+            message: "Profile updated successfully!",
+            user: updatedUser
+        });
+
+    } catch (error) {
+        console.error("Profile Update Error:", error);
+        res.status(500).json({ message: 'Error updating profile' });
+    }
+};

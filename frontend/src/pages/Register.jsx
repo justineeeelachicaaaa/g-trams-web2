@@ -1,340 +1,120 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import bgVideo from '../assets/gasanview.mp4'; 
+import logoImg from '../assets/gasan-logo.png'; 
+import openEyeIcon from '../assets/openeye.png';
+import closeEyeIcon from '../assets/closeeye.png';
 
-export default function OperatorDashboard() {
-    const [activeTab, setActiveTab] = useState('franchises'); 
-    const [myFranchises, setMyFranchises] = useState([]);
-    const navigate = useNavigate();
-    const token = localStorage.getItem('token');
-
-    // UPDATED FORM DATA: Ginamit ang tamang field names na tugma sa backend
+export default function Register() {
     const [formData, setFormData] = useState({
-        zone: '', made: '', make: '', motorNo: '', chassisNo: '', plateNo: '',
-        todaName: '', cedulaDate: '', cedulaAddress: '', cedulaSerialNo: ''
+        name: '',
+        address: '',
+        email: '',
+        password: '',
+        confirmPassword: ''
     });
-    
-    const [orCrFile, setOrCrFile] = useState(null); 
-    const [renewingId, setRenewingId] = useState(null);
-    
-    // UPDATED RENEW DATA
-    const [renewData, setRenewData] = useState({ cedulaSerialNo: '', cedulaDate: '', cedulaAddress: '' });
+    const [showPassword, setShowPassword] = useState(false);
+    const navigate = useNavigate();
 
-    const [profileData, setProfileData] = useState({ name: '', address: '' });
-    const [profilePic, setProfilePic] = useState(null);
-
-    useEffect(() => {
-        if (!token) navigate('/login');
-        else fetchMyFranchises();
-    }, [navigate, token]);
-
-    const fetchMyFranchises = async () => {
-        try {
-            // BINAGO SA LOCALHOST PARA SA LOCAL TESTING
-            const res = await fetch('http://localhost:3000/api/v1/franchises/my-franchises', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
-            setMyFranchises(data);
-        } catch (error) {
-            console.error("error fetching data:", error);
-        }
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        navigate('/login');
-    };
-
-    const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-    const handleRenewChange = (e) => setRenewData({ ...renewData, [e.target.name]: e.target.value });
-    const handleProfileChange = (e) => setProfileData({ ...profileData, [e.target.name]: e.target.value });
-
-    const canApply = myFranchises.length < 2;
-
-    // 1. TAMANG PAG-SUBMIT NG NEW APPLICATION
-    const handleApply = async (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
-        if (!canApply) return alert("Hanggang dalawang (2) prangkisa lang ang pwede per operator.");
+
+        if (formData.password !== formData.confirmPassword) {
+            return alert("Hindi magkapareho ang Password at Confirm Password.");
+        }
 
         try {
-            const submitData = new FormData();
-            submitData.append('todaName', formData.todaName);
-            submitData.append('zone', formData.zone);
-            submitData.append('plateNo', formData.plateNo);
-            submitData.append('made', formData.made);
-            submitData.append('make', formData.make);
-            submitData.append('motorNo', formData.motorNo);
-            submitData.append('chassisNo', formData.chassisNo);
-            
-            // Ipasa ang Cedula fields nang isa-isa, TUGMA sa backend
-            submitData.append('cedulaDate', formData.cedulaDate);
-            submitData.append('cedulaAddress', formData.cedulaAddress);
-            submitData.append('cedulaSerialNo', formData.cedulaSerialNo);
-
-            if (orCrFile) submitData.append('orCrDocument', orCrFile);
-
-            const res = await fetch('http://localhost:3000/api/v1/franchises', {
+            const response = await fetch('http://localhost:3000/api/v1/auth/register', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: submitData
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    name: formData.name,
+                    address: formData.address,
+                    email: formData.email, 
+                    password: formData.password,
+                    role: 'operator' 
+                })
             });
 
-            if (res.ok) {
-                alert('Application Submitted Successfully!');
-                fetchMyFranchises(); 
-                setFormData({ zone: '', made: '', make: '', motorNo: '', chassisNo: '', plateNo: '', todaName: '', cedulaDate: '', cedulaAddress: '', cedulaSerialNo: '' });
-                setOrCrFile(null); 
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('Registration successful! Pwede ka na mag-login.');
+                navigate('/login'); 
             } else {
-                const data = await res.json();
-                alert(data.message || 'Error sa pag-submit. Suriin kung doble ang plate/motor number.');
+                alert(data.message || 'Registration failed. Maaaring nagamit na ang email na ito.');
             }
         } catch (error) {
-            console.error('error applying:', error);
+            console.error("Registration error:", error);
+            alert("Cannot connect to the server. Please make sure the backend is running.");
         }
-    };
-
-    // 2. TAMANG PAG-SUBMIT NG RENEWAL
-    const submitRenewal = async (e, id) => {
-        e.preventDefault();
-        try {
-            const payload = {
-                dateApplied: new Date().toISOString().split('T')[0], // Exact format na hinihingi
-                cedulaSerialNo: renewData.cedulaSerialNo,
-                cedulaDate: renewData.cedulaDate,
-                cedulaAddress: renewData.cedulaAddress
-            };
-            
-            const res = await fetch(`http://localhost:3000/api/v1/franchises/${id}/renew`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify(payload)
-            });
-
-            if (res.ok) {
-                alert('Renewal request submitted! Antayin ang approval ng Admin.');
-                setRenewingId(null);
-                setRenewData({ cedulaSerialNo: '', cedulaDate: '', cedulaAddress: '' });
-                fetchMyFranchises();
-            } else {
-                alert('Error submitting renewal.');
-            }
-        } catch (error) {
-            console.error('error renewing:', error);
-        }
-    };
-
-    const handleCancelFranchise = async (id) => {
-        const reason = window.prompt("Bakit mo ika-cancel ang prangkisang ito?");
-        if (reason === null || reason.trim() === '') {
-            alert("Kailangan mong maglagay ng rason para makapag-cancel.");
-            return;
-        }
-
-        try {
-            const res = await fetch(`http://localhost:3000/api/v1/franchises/${id}/cancel`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ cancelReason: reason })
-            });
-
-            if (res.ok) fetchMyFranchises();
-        } catch (error) {
-            console.error("error cancelling:", error);
-        }
-    };
-
-    const handleUpdateProfile = async (e) => {
-        e.preventDefault();
-        try {
-            const formDataProfile = new FormData();
-            formDataProfile.append('name', profileData.name);
-            formDataProfile.append('address', profileData.address);
-            if (profilePic) formDataProfile.append('profilePic', profilePic);
-
-            const res = await fetch('http://localhost:3000/api/v1/auth/profile', {
-                method: 'PUT',
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: formDataProfile
-            });
-
-            if (res.ok) {
-                alert("Profile updated!");
-                setProfileData({ name: '', address: '' });
-                setProfilePic(null);
-            } else {
-                alert("Error updating profile.");
-            }
-        } catch (error) {
-            console.error("error:", error);
-        }
-    };
-
-    // Calculate Valid Until date for display
-    const getExpiryDate = (dateApplied) => {
-        const applied = new Date(dateApplied);
-        const expiry = new Date(applied.setFullYear(applied.getFullYear() + 1));
-        return expiry.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     };
 
     return (
-        <div className="admin-layout">
-            <div className="sidebar no-print">
-                <div className="sidebar-title">G-TRAMS</div>
-                <button className={`nav-button ${activeTab === 'franchises' ? 'active' : ''}`} onClick={() => setActiveTab('franchises')}>
-                    🛺 My Franchises
-                </button>
-                <button className={`nav-button ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
-                    👤 My Profile
-                </button>
+        <div style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            
+            <video autoPlay loop muted playsInline style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', objectFit: 'cover', zIndex: -2 }}>
+                <source src={bgVideo} type="video/mp4" />
+            </video>
+
+            <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0, 0, 0, 0.6)', zIndex: -1 }}></div>
+
+            <div className="card" style={{ width: '100%', maxWidth: '450px', zIndex: 1, backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
                 
-                <div style={{ flex: 1 }}></div>
-                <button className="danger" onClick={handleLogout} style={{ width: '100%', padding: '12px' }}>Log Out</button>
-            </div>
+                <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                    <img src={logoImg} alt="Municipal Logo" style={{ width: '70px', height: 'auto', marginBottom: '10px' }} />
+                    {/* BAGONG KULAY (Dark Teal) */}
+                    <h2 style={{ color: '#1F6F5F', margin: 0, fontWeight: '800' }}>Register Account</h2>
+                    <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>Gumawa ng account para makapag-apply ng prangkisa</p>
+                </div>
 
-            <div className="admin-content">
-                
-                {activeTab === 'franchises' && (
-                    <div>
-                        <h2 style={{ color: '#0f172a', marginTop: 0 }}>My Franchises</h2>
-                        <p style={{ color: '#64748b', marginBottom: '2rem' }}>Pamahalaan ang iyong mga tricycle units. (Max 2 units per operator)</p>
+                <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column' }}>
+                    
+                    <label style={{ marginBottom: '0.3rem', fontWeight: '500', fontSize: '0.9rem' }}>Full Name</label>
+                    <input type="text" name="name" placeholder="Juan Dela Cruz" value={formData.name} onChange={handleChange} required style={{ marginBottom: '10px' }} />
 
-                        <div className="main-grid">
-                            
-                            {/* --- FORM NG PAG-APPLY --- */}
-                            <div className="card">
-                                <h3 style={{ color: '#0f172a' }}>Mag-apply ng Prangkisa</h3>
-                                
-                                {!canApply ? (
-                                    <div style={{ backgroundColor: '#fee2e2', padding: '1rem', borderRadius: '8px', border: '1px solid #fca5a5', marginTop: '1rem' }}>
-                                        <p style={{ margin: 0, color: '#991b1b', fontWeight: 'bold' }}>Limit Reached: Hanggang dalawang (2) units lang ang pwedeng i-rehistro ng bawat operator.</p>
-                                    </div>
-                                ) : (
-                                    <form onSubmit={handleApply} style={{ marginTop: '1rem' }}>
-                                        <div className="form-grid">
-                                            <div><label style={{color: '#334155'}}>TODA Name</label><input type="text" name="todaName" value={formData.todaName} onChange={handleChange} required /></div>
-                                            <div><label style={{color: '#334155'}}>Zone / Route</label><input type="text" name="zone" value={formData.zone} onChange={handleChange} required /></div>
-                                            <div><label style={{color: '#334155'}}>Plate No.</label><input type="text" name="plateNo" value={formData.plateNo} onChange={handleChange} required /></div>
-                                            <div><label style={{color: '#334155'}}>Made (Model)</label><input type="text" name="made" value={formData.made} onChange={handleChange} required /></div>
-                                            <div className="span-2"><label style={{color: '#334155'}}>Make (Brand)</label><input type="text" name="make" value={formData.make} onChange={handleChange} required /></div>
-                                            <div><label style={{color: '#334155'}}>Motor No.</label><input type="text" name="motorNo" value={formData.motorNo} onChange={handleChange} required /></div>
-                                            <div><label style={{color: '#334155'}}>Chassis No.</label><input type="text" name="chassisNo" value={formData.chassisNo} onChange={handleChange} required /></div>
-                                        </div>
-                                        
-                                        <hr style={{ margin: '1.5rem 0', borderColor: '#e2e8f0', borderStyle: 'solid' }} />
-                                        <h4 style={{ marginBottom: '1rem', color: '#64748b' }}>Detalye ng Sedula (Tax Identification)</h4>
-                                        <div className="form-grid">
-                                            <div><label style={{color: '#334155'}}>Serial No. / CTC No.</label><input type="text" name="cedulaSerialNo" value={formData.cedulaSerialNo} onChange={handleChange} required /></div>
-                                            <div><label style={{color: '#334155'}}>Date Issued (Kinuha)</label><input type="date" name="cedulaDate" value={formData.cedulaDate} onChange={handleChange} required /></div>
-                                            <div className="span-2"><label style={{color: '#334155'}}>Address / Place Issued</label><input type="text" name="cedulaAddress" value={formData.cedulaAddress} onChange={handleChange} required /></div>
-                                        </div>
-                                        
-                                        <hr style={{ margin: '1.5rem 0', borderColor: '#e2e8f0', borderStyle: 'solid' }} />
-                                        <div className="span-2">
-                                            <label style={{ color: '#64748b', fontWeight: 'bold' }}>Upload LTO OR/CR o Barangay Clearance</label>
-                                            <input type="file" accept="image/*,.pdf" onChange={(e) => setOrCrFile(e.target.files[0])} style={{ padding: '0.5rem 0', width: '100%', marginBottom: '1rem' }} />
-                                        </div>
+                    <label style={{ marginBottom: '0.3rem', fontWeight: '500', fontSize: '0.9rem' }}>Home Address</label>
+                    <input type="text" name="address" placeholder="Barangay, Gasan, Marinduque" value={formData.address} onChange={handleChange} required style={{ marginBottom: '10px' }} />
 
-                                        <button type="submit" style={{ width: '100%', marginTop: '10px', backgroundColor: '#2563eb' }}>I-submit ang Application</button>
-                                    </form>
-                                )}
-                            </div>
+                    <label style={{ marginBottom: '0.3rem', fontWeight: '500', fontSize: '0.9rem' }}>Email Address</label>
+                    <input type="email" name="email" placeholder="example@gmail.com" value={formData.email} onChange={handleChange} required style={{ marginBottom: '10px' }} />
 
-                            {/* --- LISTAHAN NG UNITS --- */}
-                            <div className="card" style={{ alignSelf: 'start' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                                    <h3 style={{ color: '#0f172a', margin: 0 }}>Listahan ng Units</h3>
-                                    <span style={{ backgroundColor: '#e2e8f0', padding: '4px 10px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold', color: '#334155' }}>
-                                        {myFranchises.length} / 2 Units
-                                    </span>
-                                </div>
-                                
-                                {myFranchises.length === 0 ? (
-                                    <p style={{ textAlign: 'center', marginTop: '2rem', color: '#64748b' }}>Wala ka pang naka-register na prangkisa.</p>
-                                ) : (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                        {myFranchises.map(franchise => (
-                                            <div key={franchise._id} style={{ padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: '#f8fafc' }}>
-                                                
-                                                <div style={{ marginBottom: '10px' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-                                                        <strong style={{ fontSize: '1.2rem', color: '#0f172a' }}>{franchise.plateNo}</strong>
-                                                        <span className={`badge ${franchise.status.toLowerCase()}`}>{franchise.status}</span>
-                                                    </div>
-                                                    <p style={{ margin: '0 0 5px 0', fontSize: '0.85rem', color: '#475569' }}><strong>Unit:</strong> {franchise.make} {franchise.made}</p>
-                                                    <p style={{ margin: '0 0 5px 0', fontSize: '0.85rem', color: '#475569' }}><strong>Zone:</strong> {franchise.zone} | <strong>TODA:</strong> {franchise.todaName}</p>
-                                                    <p style={{ margin: '0', fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>Valid Until: {getExpiryDate(franchise.dateApplied)}</p>
-                                                </div>
-
-                                                {/* KUNG CANCELLED, IPAPAKITA YUNG RASON */}
-                                                {franchise.status === 'Cancelled' && franchise.cancelReason && (
-                                                    <div style={{ backgroundColor: '#fee2e2', padding: '10px', borderRadius: '6px', border: '1px solid #fca5a5', marginTop: '10px', marginBottom: '10px' }}>
-                                                        <p style={{ margin: 0, color: '#991b1b', fontSize: '0.85rem' }}><strong>Rason ng Pag-cancel:</strong> {franchise.cancelReason}</p>
-                                                    </div>
-                                                )}
-                                                
-                                                {franchise.status !== 'Cancelled' && (
-                                                    <button onClick={() => handleCancelFranchise(franchise._id)} style={{ width: '100%', backgroundColor: '#ef4444', fontSize: '0.85rem', padding: '6px', marginTop: '5px' }}>
-                                                        I-Cancel ang Prangkisa
-                                                    </button>
-                                                )}
-
-                                                {/* RENEW BUTTON & FORM */}
-                                                {franchise.status === 'Expired' && renewingId !== franchise._id && (
-                                                    <button onClick={() => setRenewingId(franchise._id)} style={{ width: '100%', backgroundColor: '#f59e0b', fontSize: '0.9rem', padding: '8px', marginTop: '10px' }}>Mag-Renew</button>
-                                                )}
-
-                                                {renewingId === franchise._id && (
-                                                    <form onSubmit={(e) => submitRenewal(e, franchise._id)} style={{ marginTop: '10px', padding: '10px', backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '5px' }}>
-                                                        <h5 style={{ margin: '0 0 10px 0', color: '#2563eb' }}>Bagong Sedula Info:</h5>
-                                                        <input type="text" name="cedulaSerialNo" placeholder="Bagong Sedula Serial No." value={renewData.cedulaSerialNo} onChange={handleRenewChange} required style={{ padding: '6px', marginBottom: '8px', width: '100%', border: '1px solid #ccc', borderRadius: '4px' }}/>
-                                                        <input type="date" name="cedulaDate" value={renewData.cedulaDate} onChange={handleRenewChange} required style={{ padding: '6px', marginBottom: '8px', width: '100%', border: '1px solid #ccc', borderRadius: '4px' }}/>
-                                                        <input type="text" name="cedulaAddress" placeholder="Saan Kinuha?" value={renewData.cedulaAddress} onChange={handleRenewChange} required style={{ padding: '6px', marginBottom: '10px', width: '100%', border: '1px solid #ccc', borderRadius: '4px' }}/>
-                                                        <div style={{ display: 'flex', gap: '5px' }}>
-                                                            <button type="submit" style={{ flex: 1, padding: '6px', backgroundColor: '#10b981' }}>I-submit</button>
-                                                            <button type="button" onClick={() => setRenewingId(null)} className="danger" style={{ flex: 1, padding: '6px' }}>Back</button>
-                                                        </div>
-                                                    </form>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                    <label style={{ marginBottom: '0.3rem', fontWeight: '500', fontSize: '0.9rem' }}>Password</label>
+                    <div style={{ position: 'relative', width: '100%', display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                        <input 
+                            type={showPassword ? "text" : "password"} 
+                            name="password"
+                            placeholder="Create a password" 
+                            value={formData.password} 
+                            onChange={handleChange} 
+                            required 
+                            style={{ width: '100%', paddingRight: '45px', boxSizing: 'border-box', margin: 0 }}
+                        />
+                        <button 
+                            type="button" 
+                            onClick={() => setShowPassword(!showPassword)}
+                            style={{ position: 'absolute', right: '12px', top: 0, bottom: 0, background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                            <img src={showPassword ? openEyeIcon : closeEyeIcon} alt="toggle" style={{ width: '20px', height: '20px', opacity: 0.6 }} />
+                        </button>
                     </div>
-                )}
 
-                {activeTab === 'profile' && (
-                    <div className="card" style={{ maxWidth: '600px', margin: '0 auto' }}>
-                        <h2 style={{ color: '#0f172a', marginTop: 0 }}>My Profile</h2>
-                        <p style={{ color: '#64748b' }}>I-update ang iyong personal na detalye at profile picture.</p>
-                        <hr style={{ margin: '1.5rem 0', borderColor: '#e2e8f0' }} />
+                    <label style={{ marginBottom: '0.3rem', fontWeight: '500', fontSize: '0.9rem' }}>Confirm Password</label>
+                    <input type="password" name="confirmPassword" placeholder="Confirm your password" value={formData.confirmPassword} onChange={handleChange} required style={{ marginBottom: '15px' }} />
 
-                        <form onSubmit={handleUpdateProfile}>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem' }}>
-                                <div style={{ width: '120px', height: '120px', borderRadius: '50%', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '2px solid #2563eb', marginBottom: '10px' }}>
-                                    {profilePic ? (
-                                        <img src={URL.createObjectURL(profilePic)} alt="Profile Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                    ) : (
-                                        <span style={{ fontSize: '3rem' }}>👤</span>
-                                    )}
-                                </div>
-                                <input type="file" accept="image/*" onChange={(e) => setProfilePic(e.target.files[0])} style={{ width: '200px', padding: '5px', fontSize: '0.8rem' }} />
-                            </div>
+                    <button type="submit" className="btn-primary" style={{ marginTop: '0.5rem', width: '100%', padding: '12px' }}>Create Account</button>
+                </form>
 
-                            <label style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#334155' }}>Buong Pangalan</label>
-                            <input type="text" name="name" value={profileData.name} onChange={handleProfileChange} placeholder="Ilagay ang bagong pangalan..." style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }} />
-
-                            <label style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#334155', marginTop: '10px' }}>Home Address</label>
-                            <input type="text" name="address" value={profileData.address} onChange={handleProfileChange} placeholder="Ilagay ang bagong address..." style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }} />
-
-                            <button type="submit" style={{ width: '100%', marginTop: '1rem', backgroundColor: '#2563eb' }}>
-                                Save Profile Changes
-                            </button>
-                        </form>
-                    </div>
-                )}
-
+                <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem' }}>
+                    <p style={{ margin: 0 }}>
+                        {/* BAGONG KULAY PARA SA LINK (Medium Teal) */}
+                        Already have an account? <Link to="/login" style={{ color: '#2FA084', textDecoration: 'none', fontWeight: '600' }}>Log In here</Link>
+                    </p>
+                </div>
             </div>
         </div>
     );

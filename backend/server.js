@@ -25,3 +25,6 @@ app.use(`${BASE_URI}/franchises`, franchiseRoutes);
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+app.use('/api/v1/calendar', require('./src/routes/calendarRoutes'));
+app.use('/api/v1/reports', require('./src/routes/reportRoutes'));

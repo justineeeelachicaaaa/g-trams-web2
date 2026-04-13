@@ -7,6 +7,10 @@ const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ['operator', 'admin'], default: 'operator' },
+    
+    // ETO YUNG KULANG KAYA TINATAPON NI DATABASE ANG PICTURE:
+    profilePic: { type: String, default: '' },
+    
     isVerified: { type: Boolean, default: false },
     otp: { type: String },
     otpExpire: { type: Date }

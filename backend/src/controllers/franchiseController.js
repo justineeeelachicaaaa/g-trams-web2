@@ -33,7 +33,7 @@ const createFranchise = async (req, res) => {
             zone, made, make, motorNo, chassisNo, plateNo, todaName,
             cedulaDate, cedulaAddress, cedulaSerialNo,
             applicationType: applicationType || 'New',
-            status: status || 'Active',
+            status: status || 'Pending',
             dateApplied: dateApplied || Date.now(),
             orCrUrl: documentUrl
         });
@@ -125,11 +125,17 @@ const renewFranchise = async (req, res) => {
 // 7. UPDATE STATUS ONLY (Dashboard Quick Action)
 const updateFranchiseStatus = async (req, res) => {
     try {
-        const { status, cancelReason } = req.body; 
+        // Idinagdag natin ang eSigned at releaseDate mula sa frontend
+        const { status, cancelReason, eSigned, releaseDate } = req.body; 
         
         const updatedFranchise = await Franchise.findByIdAndUpdate(
             req.params.id,
-            { status: status, cancelReason: cancelReason || '' },
+            { 
+                status: status, 
+                cancelReason: cancelReason || '',
+                eSigned: eSigned || false,
+                releaseDate: releaseDate || ''
+            },
             { new: true } 
         ).populate('operator', 'name address email');
 
@@ -139,7 +145,6 @@ const updateFranchiseStatus = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-
 // 8. CANCEL FRANCHISE (Operator)
 const cancelMyFranchise = async (req, res) => {
     try {

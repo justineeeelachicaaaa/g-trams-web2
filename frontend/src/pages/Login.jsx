@@ -14,7 +14,6 @@ export default function Login() {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            // NAKA-LOCALHOST NA ITO
             const response = await fetch('http://localhost:3000/api/v1/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -52,7 +51,8 @@ export default function Login() {
                 
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     <img src={logoImg} alt="Municipal Logo" style={{ width: '80px', height: 'auto', marginBottom: '10px' }} />
-                    <h2 style={{ color: '#2563eb', margin: 0 }}>G-TRAMS</h2>
+                    {/* BAGONG KULAY PARA SA G-TRAMS TITLE (Dark Teal) */}
+                    <h2 style={{ color: '#1F6F5F', margin: 0, fontWeight: '800' }}>G-TRAMS</h2>
                     <p style={{ margin: 0, color: '#64748b' }}>Gasan Tricycle Franchise Management System</p>
                 </div>
 
@@ -80,19 +80,21 @@ export default function Login() {
                         </button>
                     </div>
 
-                    {/* DITO YUNG NA-UPDATE NA FORGOT PASSWORD LINK */}
                     <div style={{ textAlign: 'right', marginTop: '5px' }}>
-                        <Link to="/forgot-password" style={{ fontSize: '0.8rem', color: '#64748b', textDecoration: 'none', fontWeight: 'bold' }}>
+                        {/* BAGONG KULAY PARA SA LINK (Medium Teal) */}
+                        <Link to="/forgot-password" style={{ fontSize: '0.8rem', color: '#2FA084', textDecoration: 'none', fontWeight: 'bold' }}>
                             Forgot Password?
                         </Link>
                     </div>
 
-                    <button type="submit" style={{ marginTop: '1rem', width: '100%' }}>Log In</button>
+                    {/* Naka-link na sa CSS ang button */}
+                    <button type="submit" className="btn-primary" style={{ marginTop: '1rem', width: '100%' }}>Log In</button>
                 </form>
 
                 <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem' }}>
                     <p style={{ margin: 0 }}>
-                        Don't have an account yet? <Link to="/register" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: '600' }}>Register here</Link>
+                        {/* BAGONG KULAY PARA SA LINK */}
+                        Don't have an account yet? <Link to="/register" style={{ color: '#2FA084', textDecoration: 'none', fontWeight: '600' }}>Register here</Link>
                     </p>
                 </div>
             </div>

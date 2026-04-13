@@ -1,11 +1,7 @@
 const mongoose = require('mongoose');
 
 const franchiseSchema = new mongoose.Schema({
-    operator: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', 
-        required: true
-    },
+    operator: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     zone: { type: String, required: true },
     made: { type: String, required: true },
     make: { type: String, required: true },
@@ -16,8 +12,6 @@ const franchiseSchema = new mongoose.Schema({
     orCrUrl: { type: String }, 
    
     dateApplied: { type: Date, default: Date.now },
-    
-    // BINAGO: Pinalitan ang taxIdSedula para tumugma sa controller
     cedulaDate: { type: Date, required: true },
     cedulaAddress: { type: String, required: true },
     cedulaSerialNo: { type: String, required: true },
@@ -25,9 +19,11 @@ const franchiseSchema = new mongoose.Schema({
     status: { type: String, enum: ['Pending', 'Active', 'Expired', 'Cancelled'], default: 'Pending' },
     applicationType: { type: String, default: 'New' },
     cancelReason: { type: String, default: '' },       
-            
-    issueDate: { type: Date },
-    expiryDate: { type: Date }
+    
+    // --- MGA BAGONG FIELDS PARA SA E-SIGN AT ESTIMATION ---
+    eSigned: { type: Boolean, default: false }, 
+    releaseDate: { type: String, default: '' }
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Franchise', franchiseSchema);
