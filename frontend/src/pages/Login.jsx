@@ -14,7 +14,7 @@ export default function Login() {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('http://localhost:3000/api/v1/auth/login', {
+            const response = await fetch('https://g-trams-web2.onrender.com/api/v1/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -51,7 +51,6 @@ export default function Login() {
                 
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     <img src={logoImg} alt="Municipal Logo" style={{ width: '80px', height: 'auto', marginBottom: '10px' }} />
-                    {/* BAGONG KULAY PARA SA G-TRAMS TITLE (Dark Teal) */}
                     <h2 style={{ color: '#1F6F5F', margin: 0, fontWeight: '800' }}>G-TRAMS</h2>
                     <p style={{ margin: 0, color: '#64748b' }}>Gasan Tricycle Franchise Management System</p>
                 </div>
@@ -81,19 +80,16 @@ export default function Login() {
                     </div>
 
                     <div style={{ textAlign: 'right', marginTop: '5px' }}>
-                        {/* BAGONG KULAY PARA SA LINK (Medium Teal) */}
                         <Link to="/forgot-password" style={{ fontSize: '0.8rem', color: '#2FA084', textDecoration: 'none', fontWeight: 'bold' }}>
                             Forgot Password?
                         </Link>
                     </div>
 
-                    {/* Naka-link na sa CSS ang button */}
                     <button type="submit" className="btn-primary" style={{ marginTop: '1rem', width: '100%' }}>Log In</button>
                 </form>
 
                 <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem' }}>
                     <p style={{ margin: 0 }}>
-                        {/* BAGONG KULAY PARA SA LINK */}
                         Don't have an account yet? <Link to="/register" style={{ color: '#2FA084', textDecoration: 'none', fontWeight: '600' }}>Register here</Link>
                     </p>
                 </div>

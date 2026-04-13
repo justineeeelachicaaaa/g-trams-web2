@@ -1,8 +1,8 @@
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
-const sendEmail = require('../utils/sendEmail'); // Siguraduhing tama ang path nito
+const sendEmail = require('../utils/sendEmail'); // ensure this path is correct
 
-// REGISTER
+// register
 exports.register = async (req, res) => {
     try {
         const { name, address, email, password, role } = req.body;
@@ -27,7 +27,7 @@ exports.register = async (req, res) => {
     }
 };
 
-// LOGIN
+// login
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -45,7 +45,7 @@ exports.login = async (req, res) => {
     }
 };
 
-// GET USERS
+// get users
 exports.getUsers = async (req, res) => {
     try {
         const users = await User.find().select('-password');
@@ -55,14 +55,14 @@ exports.getUsers = async (req, res) => {
     }
 };
 
-// --- MGA BAGONG FUNCTIONS PARA SA PASSWORD ---
+// password management functions
 
-// FORGOT PASSWORD (Magse-send ng OTP)
+// forgot password (sends otp)
 exports.forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
         const user = await User.findOne({ email });
-        if (!user) return res.status(404).json({ message: 'Hindi nakarehistro ang email na ito.' });
+        if (!user) return res.status(404).json({ message: 'Email is not registered.' });
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         user.otp = otp;
@@ -73,7 +73,7 @@ exports.forgotPassword = async (req, res) => {
             await sendEmail({
                 email: user.email,
                 subject: 'G-TRAMS: Password Reset OTP',
-                message: `Ang iyong OTP para ma-reset ang password ay: ${otp}\n\nValid lamang ito ng 10 minuto.`
+                message: `Your OTP to reset your password is: ${otp}\n\nThis is valid for 10 minutes only.`
             });
             res.status(200).json({ message: 'OTP sent to email successfully.' });
         } catch (err) {
@@ -87,7 +87,7 @@ exports.forgotPassword = async (req, res) => {
     }
 };
 
-// RESET PASSWORD (Gamit ang OTP at Bagong Password)
+// reset password (using otp and new password)
 exports.resetPassword = async (req, res) => {
     try {
         const { email, otp, newPassword } = req.body;
@@ -97,27 +97,27 @@ exports.resetPassword = async (req, res) => {
             otpExpire: { $gt: Date.now() } 
         });
 
-        if (!user) return res.status(400).json({ message: 'Invalid o expired na ang OTP.' });
+        if (!user) return res.status(400).json({ message: 'Invalid or expired OTP.' });
 
         user.password = newPassword; 
         user.otp = undefined;
         user.otpExpire = undefined;
         await user.save();
 
-        res.status(200).json({ message: 'Password reset successful. Pwede ka na mag-login.' });
+        res.status(200).json({ message: 'Password reset successful. You can now login.' });
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }
 };
 
-// CHANGE PASSWORD (Sa loob ng Dashboard / Settings)
+// change password (from dashboard settings)
 exports.changePassword = async (req, res) => {
     try {
         const { oldPassword, newPassword } = req.body;
         const user = await User.findById(req.user._id);
 
         const isMatch = await user.matchPassword(oldPassword);
-        if (!isMatch) return res.status(400).json({ message: 'Mali ang iyong lumang password.' });
+        if (!isMatch) return res.status(400).json({ message: 'Incorrect old password.' });
 
         user.password = newPassword;
         await user.save();
@@ -128,11 +128,11 @@ exports.changePassword = async (req, res) => {
     }
 };
 
-// 1. VERIFY ADMIN PASSWORD (Para sa Security Prompt)
+// verify admin password (for security prompt)
 exports.verifyAdminPassword = async (req, res) => {
     try {
         const { password } = req.body;
-        const user = await User.findById(req.user._id); // Kunin ang admin na naka-login
+        const user = await User.findById(req.user._id); // get logged in admin
         
         const isMatch = await user.matchPassword(password);
         if (!isMatch) return res.status(401).json({ message: 'Incorrect Admin Password' });
@@ -143,7 +143,7 @@ exports.verifyAdminPassword = async (req, res) => {
     }
 };
 
-// 2. UPDATE USER DETAILS (Admin Action)
+// update user details (admin action)
 exports.updateUser = async (req, res) => {
     try {
         const updatedUser = await User.findByIdAndUpdate(
@@ -159,7 +159,7 @@ exports.updateUser = async (req, res) => {
     }
 };
 
-// 3. DELETE USER (Admin Action)
+// delete user (admin action)
 exports.deleteUser = async (req, res) => {
     try {
         const user = await User.findByIdAndDelete(req.params.id);
@@ -177,15 +177,15 @@ exports.updateProfile = async (req, res) => {
         
         let updateData = { name, address };
 
-        // KUNG MAY SINALO SI MULTER, KUNIN ANG CLOUDINARY LINK!
+        // if multer captures a file, get cloudinary link
         if (req.file) {
-            updateData.profilePic = req.file.path; // Automatic Cloudinary URL na ito!
+            updateData.profilePic = req.file.path; // automatic cloudinary url
         }
 
         const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
 
         res.status(200).json({
-            message: "Profile updated successfully!",
+            message: "Profile updated successfully",
             user: updatedUser
         });
 

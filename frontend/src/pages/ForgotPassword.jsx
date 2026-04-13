@@ -12,7 +12,7 @@ export default function ForgotPassword() {
     const handleSendOTP = async (e) => {
         e.preventDefault();
         try {
-            const res = await fetch('http://localhost:3000/api/v1/auth/forgot-password', {
+            const res = await fetch('https://g-trams-web2.onrender.com/api/v1/auth/forgot-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email })
@@ -32,7 +32,7 @@ export default function ForgotPassword() {
     const handleResetPassword = async (e) => {
         e.preventDefault();
         try {
-            const res = await fetch('http://localhost:3000/api/v1/auth/reset-password', {
+            const res = await fetch('https://g-trams-web2.onrender.com/api/v1/auth/reset-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, otp, newPassword })

@@ -28,7 +28,7 @@ export default function Register() {
         }
 
         try {
-            const response = await fetch('http://localhost:3000/api/v1/auth/register', {
+            const response = await fetch('https://g-trams-web2.onrender.com/api/v1/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
@@ -67,7 +67,6 @@ export default function Register() {
                 
                 <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                     <img src={logoImg} alt="Municipal Logo" style={{ width: '70px', height: 'auto', marginBottom: '10px' }} />
-                    {/* BAGONG KULAY (Dark Teal) */}
                     <h2 style={{ color: '#1F6F5F', margin: 0, fontWeight: '800' }}>Register Account</h2>
                     <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>Gumawa ng account para makapag-apply ng prangkisa</p>
                 </div>
@@ -111,7 +110,6 @@ export default function Register() {
 
                 <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem' }}>
                     <p style={{ margin: 0 }}>
-                        {/* BAGONG KULAY PARA SA LINK (Medium Teal) */}
                         Already have an account? <Link to="/login" style={{ color: '#2FA084', textDecoration: 'none', fontWeight: '600' }}>Log In here</Link>
                     </p>
                 </div>

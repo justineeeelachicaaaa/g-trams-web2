@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// ICONS
+// icons
 import logoImg from '../assets/gasan-logo.png'; 
 import dashboardIcon from '../assets/dashboard-icon.png';
 import scheduleIcon from '../assets/schedule-icon.png';
@@ -9,11 +9,12 @@ import usersIcon from '../assets/users-icon.png';
 import settingsIcon from '../assets/analytics-icon.png'; 
 import printerIcon from '../assets/printer.png';
 
-// LOADING GIF
+// loading gif
 import loadingGif from '../assets/loading.gif';
 
 export default function OperatorDashboard() {
-    const [isLoading, setIsLoading] = useState(true); // LOADING STATE
+    // loading state
+    const [isLoading, setIsLoading] = useState(true); 
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
     const [activeTab, setActiveTab] = useState('franchises'); 
@@ -42,7 +43,7 @@ export default function OperatorDashboard() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // SABAY-SABAY NA FETCHING WITH LOADING SCREEN
+    // concurrent data fetching
     useEffect(() => {
         if (!token) {
             navigate('/login');
@@ -68,7 +69,7 @@ export default function OperatorDashboard() {
 
     const fetchUser = async () => {
         try {
-            const res = await fetch('http://localhost:3000/api/v1/auth', { headers: { 'Authorization': `Bearer ${token}` } });
+            const res = await fetch('https://g-trams-web2.onrender.com/api/v1/auth', { headers: { 'Authorization': `Bearer ${token}` } });
             const users = await res.json();
             const payload = JSON.parse(atob(token.split('.')[1]));
             const me = users.find(u => u._id === payload.id);
@@ -78,21 +79,21 @@ export default function OperatorDashboard() {
 
     const fetchMyFranchises = async () => {
         try {
-            const res = await fetch('http://localhost:3000/api/v1/franchises/my-franchises', { headers: { 'Authorization': `Bearer ${token}` }});
+            const res = await fetch('https://g-trams-web2.onrender.com/api/v1/franchises/my-franchises', { headers: { 'Authorization': `Bearer ${token}` }});
             if(res.ok) setMyFranchises(await res.json());
         } catch (e) { console.error(e); }
     };
 
     const fetchCalendarEvents = async () => {
         try {
-            const res = await fetch('http://localhost:3000/api/v1/calendar', { headers: { 'Authorization': `Bearer ${token}` } });
+            const res = await fetch('https://g-trams-web2.onrender.com/api/v1/calendar', { headers: { 'Authorization': `Bearer ${token}` } });
             if(res.ok) setCalendarEvents(await res.json());
         } catch(e) { console.error(e); }
     };
 
     const fetchReports = async () => {
         try {
-            const res = await fetch('http://localhost:3000/api/v1/reports/my-reports', { headers: { 'Authorization': `Bearer ${token}` } });
+            const res = await fetch('https://g-trams-web2.onrender.com/api/v1/reports/my-reports', { headers: { 'Authorization': `Bearer ${token}` } });
             if (res.ok) setReports(await res.json());
         } catch (e) { console.error(e); }
     };
@@ -105,7 +106,7 @@ export default function OperatorDashboard() {
 
     const getImageUrl = (path) => {
         if (!path) return '';
-        return path.startsWith('http') ? path : `http://localhost:3000/${path.replace(/\\/g, '/')}`;
+        return path.startsWith('http') ? path : `https://g-trams-web2.onrender.com/${path.replace(/\\/g, '/')}`;
     };
 
     const canApply = myFranchises.length < 2;
@@ -118,7 +119,7 @@ export default function OperatorDashboard() {
             Object.keys(formData).forEach(key => submitData.append(key, formData[key]));
             if (orCrFile) submitData.append('orCrDocument', orCrFile);
 
-            const res = await fetch('http://localhost:3000/api/v1/franchises', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: submitData });
+            const res = await fetch('https://g-trams-web2.onrender.com/api/v1/franchises', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: submitData });
             if (res.ok) { alert('Application Submitted Successfully!'); fetchMyFranchises(); setFormData({ zone: '', made: '', make: '', motorNo: '', chassisNo: '', plateNo: '', todaName: '', cedulaDate: '', cedulaAddress: '', cedulaSerialNo: '' }); setOrCrFile(null); } 
             else { alert('Error. Plate or Motor Number might already exist.'); }
         } catch (e) { console.error(e); }
@@ -128,18 +129,18 @@ export default function OperatorDashboard() {
         e.preventDefault();
         try {
             const payload = { dateApplied: new Date().toISOString().split('T')[0], ...renewData };
-            const res = await fetch(`http://localhost:3000/api/v1/franchises/${id}/renew`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
+            const res = await fetch(`https://g-trams-web2.onrender.com/api/v1/franchises/${id}/renew`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
             if (res.ok) { alert('Renewal Application Sent!'); setRenewingId(null); setRenewData({ cedulaSerialNo: '', cedulaDate: '', cedulaAddress: '' }); fetchMyFranchises(); }
         } catch (e) { console.error(e); }
     };
 
     const handleCancelFranchise = async (id) => {
-        const confirmCancel = window.confirm("Babala: Sigurado ka bang gusto mong i-cancel ang prangkisang ito? Hindi na ito mababawi.");
+        const confirmCancel = window.confirm("Warning: Are you sure you want to cancel this franchise? This cannot be undone.");
         if (!confirmCancel) return;
-        const reason = window.prompt("Pakilagay ang rason kung bakit mo ika-cancel:");
-        if (!reason || reason.trim() === '') return alert("Kailangan ng rason para ma-cancel ang prangkisa.");
+        const reason = window.prompt("Please enter the reason for cancellation:");
+        if (!reason || reason.trim() === '') return alert("A reason is required to cancel the franchise.");
         try {
-            const res = await fetch(`http://localhost:3000/api/v1/franchises/${id}/cancel`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ cancelReason: reason }) });
+            const res = await fetch(`https://g-trams-web2.onrender.com/api/v1/franchises/${id}/cancel`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ cancelReason: reason }) });
             if (res.ok) { alert("Franchise Successfully Cancelled."); fetchMyFranchises(); }
         } catch (e) { console.error(e); }
     };
@@ -150,7 +151,7 @@ export default function OperatorDashboard() {
             const formDataProfile = new FormData();
             formDataProfile.append('name', profileData.name); formDataProfile.append('address', profileData.address);
             if (profilePic) formDataProfile.append('profilePic', profilePic);
-            const res = await fetch('http://localhost:3000/api/v1/auth/profile', { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` }, body: formDataProfile });
+            const res = await fetch('https://g-trams-web2.onrender.com/api/v1/auth/profile', { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` }, body: formDataProfile });
             if (res.ok) { alert("Profile updated successfully!"); setProfilePic(null); fetchUser(); } else { alert("Failed to update profile."); }
         } catch (e) { console.error(e); }
     };
@@ -159,7 +160,7 @@ export default function OperatorDashboard() {
         e.preventDefault();
         if (passwordData.newPassword !== passwordData.confirmPassword) return alert("Passwords do not match.");
         try {
-            const res = await fetch('http://localhost:3000/api/v1/auth/change-password', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ oldPassword: passwordData.oldPassword, newPassword: passwordData.newPassword }) });
+            const res = await fetch('https://g-trams-web2.onrender.com/api/v1/auth/change-password', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ oldPassword: passwordData.oldPassword, newPassword: passwordData.newPassword }) });
             if (res.ok) { alert('Password Updated!'); setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' }); } 
         } catch (e) { console.error(e); }
     };
@@ -167,7 +168,7 @@ export default function OperatorDashboard() {
     const handleSubmitReport = async (e) => {
         e.preventDefault();
         try {
-            const res = await fetch('http://localhost:3000/api/v1/reports', {
+            const res = await fetch('https://g-trams-web2.onrender.com/api/v1/reports', {
                 method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(reportForm)
             });
@@ -190,12 +191,10 @@ export default function OperatorDashboard() {
         window.location.reload(); 
     };
 
-    // --- MODERN UI STYLES ---
+    // modern ui styles
     const modernCard = { backgroundColor: '#ffffff', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', border: '1px solid #f1f5f9' };
 
-    // =========================================================================
-    // LOADING SCREEN VIEW
-    // =========================================================================
+    // loading screen view
     if (isLoading) {
         return (
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#f8fafc' }}>
@@ -209,7 +208,7 @@ export default function OperatorDashboard() {
     return (
         <div className="admin-layout" style={{ backgroundColor: '#f8fafc', minHeight: '100vh', display: isMobile ? 'block' : 'flex' }}>
             
-            {/* MOBILE HEADER */}
+            {/* mobile header */}
             {isMobile && (
                 <div className="mobile-header no-print" style={{ backgroundColor: '#1F6F5F', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'white', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
                     <div className="flex-row gap-1" style={{ alignItems: 'center' }}>
@@ -222,7 +221,7 @@ export default function OperatorDashboard() {
 
             {isMobile && <div className={`mobile-overlay no-print ${isSidebarOpen ? 'open' : ''}`} onClick={() => setIsSidebarOpen(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 40, display: isSidebarOpen ? 'block' : 'none' }}></div>}
 
-            {/* SIDEBAR */}
+            {/* sidebar */}
             <div className={`sidebar-container no-print ${isSidebarOpen ? 'open' : ''}`} style={{ backgroundColor: '#ffffff', boxShadow: '2px 0 8px rgba(0,0,0,0.05)', zIndex: 50, display: (!isMobile || isSidebarOpen) ? 'flex' : 'none', flexDirection: 'column', width: isMobile ? '250px' : '260px', height: '100vh', position: isMobile ? 'fixed' : 'sticky', top: 0, left: 0, transition: 'transform 0.3s ease' }}>
                 <div className="sidebar-title flex-column gap-1" style={{ alignItems: 'center', marginBottom: '2rem', padding: '2rem 1rem 0' }}>
                     {savedProfilePic ? (
@@ -246,7 +245,7 @@ export default function OperatorDashboard() {
                 </div>
             </div>
 
-            {/* CONTENT CONTAINER */}
+            {/* content container */}
             <div className="content-container" style={{ flex: 1, padding: isMobile ? '1rem' : '2rem', maxWidth: '1400px', width: '100%', overflowX: 'hidden' }}>
                 
                 {activeTab === 'franchises' && (
@@ -255,7 +254,7 @@ export default function OperatorDashboard() {
                         
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
                             
-                            {/* MY UNITS SECTION */}
+                            {/* my units section */}
                             <div style={modernCard}>
                                 <div className="flex-between mb-2" style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '10px' }}>
                                     <h3 className="m-0" style={{ color: '#1e293b' }}>My Units</h3>
@@ -308,7 +307,7 @@ export default function OperatorDashboard() {
                                                     </form>
                                                 )}
 
-                                                {/* Hidden Print Template */}
+                                                {/* hidden print template */}
                                                 <div id={`print-permit-${franchise._id}`} style={{ display: 'none' }}>
                                                     <div className="print-template">
                                                         <div className="print-header-section"><div className="print-header-content"><img src={printerIcon} alt="Logo" className="print-logo" /><h2 className="m-0">MUNICIPALITY OF GASAN</h2><h3 className="m-0">CERTIFICATE OF PUBLIC CONVENIENCE</h3><p className="text-sm">(FRANCHISE PERMIT)</p></div></div>
@@ -323,7 +322,7 @@ export default function OperatorDashboard() {
                                 )}
                             </div>
 
-                            {/* APPLICATION FORM */}
+                            {/* application form */}
                             <div style={modernCard}>
                                 <div style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '10px', marginBottom: '1rem' }}>
                                     <h3 className="m-0" style={{ color: '#1e293b' }}>Apply New Franchise</h3>
@@ -364,7 +363,7 @@ export default function OperatorDashboard() {
                     </div>
                 )}
 
-                {/* REPORTS & FEEDBACK TAB */}
+                {/* reports and feedback tab */}
                 {activeTab === 'reports' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         <h2 className="m-0 text-primary" style={{ fontSize: '1.8rem' }}>Help & Support Desk</h2>
@@ -380,7 +379,7 @@ export default function OperatorDashboard() {
                             <div style={modernCard}>
                                 <div className="flex-between mb-1" style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '10px' }}><h3 style={{ margin: 0, color: '#1e293b' }}>My Tickets</h3><span style={{ backgroundColor: '#f1f5f9', color: '#475569', padding: '0.3rem 0.8rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600' }}>{reports.length}</span></div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem', maxHeight: '500px', overflowY: 'auto', paddingRight: '5px' }}>
-                                    {reports.length === 0 ? <p className="text-muted text-center">Wala ka pang naisusumiteng report.</p> : reports.map(r => (
+                                    {reports.length === 0 ? <p className="text-muted text-center">No reports submitted yet.</p> : reports.map(r => (
                                         <div key={r._id} style={{ backgroundColor: '#f8fafc', padding: '1.2rem', borderRadius: '8px', borderLeft: `4px solid ${r.status === 'Resolved' ? '#2FA084' : '#f59e0b'}` }}>
                                             <div className="flex-between mb-1"><h4 style={{ margin: 0, color: '#0f172a', fontSize: '1.05rem' }}>{r.subject}</h4><span style={{ padding: '0.3rem 0.8rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', backgroundColor: r.status === 'Resolved' ? '#eaf6f3' : '#fef3c7', color: r.status === 'Resolved' ? '#2FA084' : '#d97706' }}>{r.status}</span></div>
                                             <p style={{ margin: '0 0 0.5rem 0', color: '#475569', fontSize: '0.9rem', lineHeight: '1.5' }}>{r.message}</p>
@@ -399,12 +398,12 @@ export default function OperatorDashboard() {
                     </div>
                 )}
 
-                {/* CALENDAR SCHEDULE */}
+                {/* calendar schedule */}
                 {activeTab === 'calendar' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         <h2 className="m-0 text-primary" style={{ fontSize: '1.8rem' }}>Office Schedule</h2>
                         <div style={modernCard}>
-                            {calendarEvents.length === 0 ? (<p className="text-muted text-center" style={{ padding: '2rem' }}>Walang nakatakdang schedule ngayon.</p>) : (
+                            {calendarEvents.length === 0 ? (<p className="text-muted text-center" style={{ padding: '2rem' }}>No schedule available.</p>) : (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                     {calendarEvents.map((ev, idx) => (
                                         <div key={idx} style={{ backgroundColor: '#f8fafc', padding: '1.2rem', borderRadius: '8px', borderLeft: `5px solid ${ev.status === 'Available' ? '#2FA084' : ev.status === 'E-Sign Mode' ? '#f59e0b' : '#ef4444'}` }}>
@@ -418,7 +417,7 @@ export default function OperatorDashboard() {
                     </div>
                 )}
 
-                {/* MY PROFILE */}
+                {/* my profile */}
                 {activeTab === 'profile' && (
                     <div style={{ display: 'flex', justifyContent: 'center' }}>
                         <div style={{...modernCard, width: '100%', maxWidth: '600px'}}>
@@ -438,7 +437,7 @@ export default function OperatorDashboard() {
                     </div>
                 )}
 
-                {/* ACCOUNT SETTINGS (Password) */}
+                {/* account settings */}
                 {activeTab === 'settings' && (
                     <div style={{ display: 'flex', justifyContent: 'center' }}>
                         <div style={{...modernCard, width: '100%', maxWidth: '500px'}}>
