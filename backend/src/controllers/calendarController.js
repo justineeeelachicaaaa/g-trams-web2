@@ -2,7 +2,7 @@ const Calendar = require('../models/calendarModel');
 
 exports.getEvents = async (req, res) => {
     try {
-        // I-sort mula sa pinaka-recent na petsa
+        
         const events = await Calendar.find().sort({ date: 1 });
         res.status(200).json(events);
     } catch (error) {

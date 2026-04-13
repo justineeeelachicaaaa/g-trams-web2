@@ -20,7 +20,7 @@ const franchiseSchema = new mongoose.Schema({
     applicationType: { type: String, default: 'New' },
     cancelReason: { type: String, default: '' },       
     
-    // --- MGA BAGONG FIELDS PARA SA E-SIGN AT ESTIMATION ---
+   
     eSigned: { type: Boolean, default: false }, 
     releaseDate: { type: String, default: '' }
 

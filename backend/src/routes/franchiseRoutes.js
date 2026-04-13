@@ -7,8 +7,8 @@ const {
     createFranchise, 
     getAllFranchises, 
     getMyFranchises, 
-    updateFranchise, // NEW
-    deleteFranchise, // NEW
+    updateFranchise, 
+    deleteFranchise, 
     renewFranchise,
     updateFranchiseStatus,
     cancelMyFranchise

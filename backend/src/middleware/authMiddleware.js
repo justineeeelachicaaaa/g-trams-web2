@@ -7,13 +7,13 @@ const protect = async (req, res, next) => {
 
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
-            // Kunin yung token (format ay "Bearer <token>")
+            // getyung token 
             token = req.headers.authorization.split(' ')[1];
             
-            // I-verify ang token
+            // verify ang token
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             
-            // Kunin ang user mula sa database (pero 'wag isama ang password sa result)
+            // get ang user mula sa database 
             req.user = await User.findById(decoded.id).select('-password');
             next();
         } catch (error) {
@@ -26,7 +26,7 @@ const protect = async (req, res, next) => {
     }
 };
 
-// 2. Role-Based Access Control (Authorization) - Kailangan admin/staff
+// 2. Role-Based Access Control (Authorization)
 const authorize = (...roles) => {
     return (req, res, next) => {
         if (!roles.includes(req.user.role)) {

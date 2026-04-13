@@ -12,7 +12,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
-        folder: 'GTRAMS_Documents', // Dito mapupunta ang mga pictures sa Cloudinary
+        folder: 'GTRAMS_Documents', 
         allowed_formats: ['jpg', 'png', 'jpeg', 'pdf']
     }
 });

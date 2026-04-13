@@ -4,13 +4,13 @@ const Franchise = require('../models/franchiseModel');
 const createFranchise = async (req, res) => {
     try {
         const { 
-            operator, // galing sa admin dropdown
+            operator, 
             zone, made, make, motorNo, chassisNo, plateNo, todaName, 
             cedulaDate, cedulaAddress, cedulaSerialNo,
             applicationType, status, dateApplied
         } = req.body;
         
-        // kunin secure_url sa cloudinary (kung may in-upload)
+       
         let documentUrl = '';
         if (req.file) {
             documentUrl = req.file.path; 
@@ -24,8 +24,7 @@ const createFranchise = async (req, res) => {
             return res.status(400).json({ message: 'Tricycle (Plate/Motor/Chassis) is already registered.' });
         }
 
-        // Kung Admin ang nag-add, gagamitin ang pinili niyang 'operator'. 
-        // Kung Operator ang nag-apply, gagamitin ang kanyang sariling ID (req.user._id).
+     
         const franchiseOwner = operator || req.user._id;
 
         let franchise = await Franchise.create({
@@ -70,7 +69,7 @@ const updateFranchise = async (req, res) => {
     try {
         const updatedFranchise = await Franchise.findByIdAndUpdate(
             req.params.id,
-            req.body, // i-save lahat ng bagong tinype sa form
+            req.body,
             { new: true } 
         ).populate('operator', 'name address email');
 
@@ -125,7 +124,7 @@ const renewFranchise = async (req, res) => {
 // 7. UPDATE STATUS ONLY (Dashboard Quick Action)
 const updateFranchiseStatus = async (req, res) => {
     try {
-        // Idinagdag natin ang eSigned at releaseDate mula sa frontend
+        
         const { status, cancelReason, eSigned, releaseDate } = req.body; 
         
         const updatedFranchise = await Franchise.findByIdAndUpdate(

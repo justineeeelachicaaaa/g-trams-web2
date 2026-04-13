@@ -8,7 +8,6 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     role: { type: String, enum: ['operator', 'admin'], default: 'operator' },
     
-    // ETO YUNG KULANG KAYA TINATAPON NI DATABASE ANG PICTURE:
     profilePic: { type: String, default: '' },
     
     isVerified: { type: Boolean, default: false },
@@ -16,7 +15,6 @@ const userSchema = new mongoose.Schema({
     otpExpire: { type: Date }
 }, { timestamps: true });
 
-// HETO ANG NABAGO: Inalis ang 'next' dahil gumagamit tayo ng async/await
 userSchema.pre('save', async function () {
     if (!this.isModified('password')) return;
     
